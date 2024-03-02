@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Luhn Algorithm Checker</title>
+</head>
+<body>
+<h2>Проверка номера карты с помощью алгоритма Луна</h2>
+
+<!-- Форма для ввода номера карты и кнопки для проверки -->
+<form id="luhnForm">
+    <label for="cardNumber">Введите номер карты:</label><br>
+    <input type="text" id="cardNumber" name="cardNumber" placeholder="Введите номер карты" required><br><br>
+    <button type="submit">Проверить</button>
+</form>
+
+<!-- Здесь будет выводиться результат проверки -->
+<div id="result"></div>
+
+<script>
+document.getElementById('luhnForm').addEventListener('submit', function(e) {
+    e.preventDefault(); // Предотвращаем отправку формы
+    var cardNumber = document.getElementById('cardNumber').value; // Получаем значение поля ввода
+    var resultDiv = document.getElementById('result'); // Получаем элемент, в который будем выводить результат
+    
+    // Функция для проверки номера карты по алгоритму Луна
+    function luhnAlgorithm(number) {
+        number = number.replace(/\D/g, '').split('').reverse().join(''); // Убираем все нецифровые символы и переворачиваем строку
+        
+        var sum = 0;
+        for (var i = 0; i < number.length; i++) {
+            var digit = parseInt(number[i], 10); // Преобразуем символ в число
+            
+            if (i % 2 === 1) { // Если цифра на нечётной позиции
+                digit *= 2;
+                if (digit > 9) {
+                    digit -= 9; // Если произведение больше 9, вычитаем 9
+                }
+            }
+            
+            sum += digit; // Суммируем цифры
+        }
+        
+        return sum % 10 === 0; // Возвращаем true, если сумма делится на 10 без остатка
+    }
+    
+    // Проверяем номер карты и выводим результат
+    if (luhnAlgorithm(cardNumber)) {
+        resultDiv.innerHTML = "<p>Номер карты верен.</p>";
+    } else {
+        resultDiv.innerHTML = "<p>Номер карты неверен.</p>";
+    }
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Алгоритм Диффи-Хеллмана и Шифрование Цезаря</title>
+</head>
+<body>
+
+<h2>Алгоритм Диффи-Хеллмана и Шифрование Цезаря</h2>
+
+<!-- Элементы для вывода результатов -->
+<div id="results"></div>
+
+<script>
+// Функция Диффи-Хеллмана для вычисления общего секретного ключа
+function diffieHellman(privateKey, publicKey, P) {
+  return Math.round(Math.pow(publicKey, privateKey) % P);
+}
+
+// Функция Шифрования Цезаря
+function caesarEncrypt(message, shift) {
+  return message
+    .split('')
+    .map((char) => {
+      const code = char.charCodeAt(0);
+      // Шифруем только для кириллических символов
+      if (char.match(/[а-яА-Я]/)) {
+        let offset = 1040; // код заглавной буквы А в Unicode
+        if (code >= 1072) offset = 1072; // код строчной буквы а в Unicode
+        return String.fromCharCode(((code - offset + shift) % 32) + offset); // 32 - количество букв в русском алфавите
+      }
+      return char;
+    })
+    .join('');
+}
+
+// Функция Дешифрования алгоритма Цезаря (вставляем противоположный сдвиг)
+function caesarDecrypt(encryptedMessage, shift) {
+  return caesarEncrypt(encryptedMessage, 32 - shift);
+}
+
+// Заданные параметры для алгоритма Диффи-Хеллмана
+const P = 23; // простое число
+const G = 61; // примитивный корень по модулю P
+
+// Приватные ключи участников
+const privateKeyBob = 5;
+const privateKeyAlice = 4;
+
+// Публичные ключи участников
+const publicKeyBob = Math.round(Math.pow(G, privateKeyBob) % P);
+const publicKeyAlice = Math.round(Math.pow(G, privateKeyAlice) % P);
+
+// Вычисляем общий секрет для Боба и Алисы
+const sharedSecretBob = diffieHellman(privateKeyBob, publicKeyAlice, P);
+const sharedSecretAlice = diffieHellman(privateKeyAlice, publicKeyBob, P);
+
+// Проверяем, совпадают ли общие секретные ключи
+if (sharedSecretAlice === sharedSecretBob) {
+  const sharedSecret = sharedSecretAlice;
+  const resultsDiv = document.getElementById('results');
+
+  // Выводим общий секретный ключ
+  resultsDiv.innerHTML += `<p>Общий секретный ключ совпал и равен ${sharedSecret}</p>`;
+
+  // Шифруем сообщение на стороне Боба
+  const messageBob = 'Информационная безопасность'; // Сообщение от Боба
+  resultsDiv.innerHTML += `<p>Незашифрованное сообщение от Боба: ${messageBob}</p>`;
+  const encryptedMessageBob = caesarEncrypt(messageBob, sharedSecret);
+  resultsDiv.innerHTML += `<p>Зашифрованное сообщение от Боба: ${encryptedMessageBob}</p>`;
+
+  // Дешифруем сообщение на стороне Алисы
+  const decryptedMessageAlice = caesarDecrypt(encryptedMessageBob, sharedSecret);
+  resultsDiv.innerHTML += `<p>Расшифрованное сообщение у Алисы: ${decryptedMessageAlice}</p>`;
+} else {
+  document.getElementById('results').innerHTML = '<p>Общий секретный ключ не совпадает!</p>';
+}
+</script>
+
+</body>
+</html>
